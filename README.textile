@@ -1,0 +1,5 @@
+h2. Sharedoc - Share pdfs, ppts etc. *Slideshow* in realtime
+
+* This is a document sharing site made in Rails 3.2.
+
+* Uses socket.io for propagating realtime events such as slide transitions and chats to viewers
