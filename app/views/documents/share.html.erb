@@ -1,0 +1,40 @@
+<div id="slides-container" style="text-align: center">
+  <div><h2>Slide <span id="slide-number">1</span> of <%=  @document.page_count %></h2></div>
+  <div id="slides"><img id="slides-image" style="width:800px;height:600px;border: solid black"/></div>
+  <div id="slides-buttons">
+    <input type="button" value="Previous" id="prev-slide"/>
+    <input type="button" value="Next" id="next-slide"/>
+  </div>
+</div>
+
+<%= javascript_tag do %>
+
+  documents.init(<%=raw @document.slides_urls.to_json %>);
+  $(function(){
+    var name = "";
+    while(!name)
+    name = prompt("Please enter your name","");
+    console.log(name);
+    var socket = io.connect('http://<%= request.host %>:1337');
+    socket.emit('join', {documentid : <%= @document.id %>, currentslide : window.documents.currentSlide, username : name, userid : '<%= Time.now.utc.to_i %>', moderator: true});
+    socket.on('joined', function(data){
+      console.log(data);
+      window.documents.isHost = data.ismoderator;
+      if(!data.ismoderator)
+      {
+        $('#slides-buttons').remove();
+        window.documents.changeSlide(data.currentSlide + 1);
+        socket.on('moderatorleft',function(){
+          alert('The moderator has left. Please refresh the page to become the host.');
+        });
+      }
+      else
+        $('#slides-container').bind('slide-change',function(){
+          socket.emit('slidechange',{documentid : <%= @document.id %>, currentslide : window.documents.currentslide});
+        });
+      socket.on('slidechanged',function(slideNumber){
+        window.documents.changeSlide(slideNumber + 1);
+      });
+    });
+   });
+<% end %>
