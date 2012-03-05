@@ -1,4 +1,4 @@
-h2. Sharedoc - Share pdfs, ppts etc. *Slideshow* in realtime
+h2. Sharedoc - Share pdfs, ppts etc. Start a slideshow through your browser to multiple viewers
 
 * This is a document sharing site made in Rails 3.2.
 
