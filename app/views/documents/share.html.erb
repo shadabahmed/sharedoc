@@ -30,7 +30,7 @@
       }
       else
         $('#slides-container').bind('slide-change',function(){
-          socket.emit('slidechange',{documentid : <%= @document.id %>, currentslide : window.documents.currentslide});
+          socket.emit('slidechange',{documentid : <%= @document.id %>, currentslide : window.documents.currentSlide});
         });
       socket.on('slidechanged',function(slideNumber){
         window.documents.changeSlide(slideNumber + 1);
