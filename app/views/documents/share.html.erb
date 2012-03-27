@@ -6,15 +6,22 @@
     <input type="button" value="Next" id="next-slide"/>
   </div>
 </div>
+<%= javascript_include_tag 'documents' %>
 
 <%= javascript_tag do %>
 
-  documents.init(<%=raw @document.slides_urls.to_json %>);
+
   $(function(){
     var name = "";
     while(!name)
     name = prompt("Please enter your name","");
     console.log(name);
+    conference.init({
+      document : {name: '<%= escape_javascript(@document.name) %>', slides: <%=raw @document.slides_urls.to_json %>},
+      transport: {host: 'http://<%= request.host %>:1337'},
+      roster: {name: name, id: '<%= Time.now.utc.to_i %>'}
+    });
+
     var socket = io.connect('http://<%= request.host %>:1337');
     socket.emit('join', {documentid : <%= @document.id %>, currentslide : window.documents.currentSlide, username : name, userid : '<%= Time.now.utc.to_i %>', moderator: true});
     socket.on('joined', function(data){

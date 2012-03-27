@@ -12,6 +12,6 @@
 //
 //= require jquery
 //= require jquery_ujs
-//= require_tree .
+//= require_self
 // Loads all Bootstrap javascripts
 //= require bootstrap
