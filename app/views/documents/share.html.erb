@@ -1,3 +1,6 @@
+<div id="status_bar">Status :
+  <span class="label">Connecting...</span>
+</div>
 <div id="slides-container" style="text-align: center">
   <div><h2>Slide <span id="slide-number">1</span> of <%=  @document.page_count %></h2></div>
   <div id="slides"><img id="slides-image" style="width:800px;height:600px;border: solid black"/></div>
@@ -17,13 +20,16 @@
     name = prompt("Please enter your name","");
     console.log(name);
     conference.init({
-      document : {name: '<%= escape_javascript(@document.name) %>', slides: <%=raw @document.slides_urls.to_json %>},
-      transport: {host: 'http://<%= request.host %>:1337'},
-      roster: {name: name, id: '<%= Time.now.utc.to_i %>'}
+      confid: '<%= request.session_options[:id] %>',
+      doc: {id: '<%= @document.id %>',name: '<%= escape_javascript(@document.name) %>', pages: <%=raw @document.slides_urls.to_json %>},
+      transport: {host: 'http://<%= request.host %>:1337/'},
+      user: {name: name, id: '<%= request.session_options[:id] %>'}
     });
+    conference.join();
 
+    /*
     var socket = io.connect('http://<%= request.host %>:1337');
-    socket.emit('join', {documentid : <%= @document.id %>, currentslide : window.documents.currentSlide, username : name, userid : '<%= Time.now.utc.to_i %>', moderator: true});
+    socket.emit('join', {}); //{documentid : <%= @document.id %>, currentslide : window.documents.currentSlide, username : name, userid : '<%= Time.now.utc.to_i %>', moderator: true});
     socket.on('joined', function(data){
       console.log(data);
       window.documents.isHost = data.ismoderator;
@@ -42,6 +48,8 @@
       socket.on('slidechanged',function(slideNumber){
         window.documents.changeSlide(slideNumber + 1);
       });
+
     });
+    */
    });
 <% end %>
