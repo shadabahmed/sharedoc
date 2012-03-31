@@ -30,10 +30,18 @@ $(document).bind('roster_self_rejoined', ->
   $('div#status_bar span.label').text('Joined as ' + conference.roster.getCurrentUser().name)
 )
 
-$(document).bind('roster_new_user', (evt,user)->
+$(document).bind('roster_user_joined', (evt,user)->
   console.log('New users joined' + user.name);
 )
 
 $(document).bind('roster_user_left', (evt,user)->
   console.log('User left' + user.name);
+)
+
+
+$(document).bind('roster_user_joined roster_user_left conf_self_joined', (evt,user)->
+  users = conference.roster.getUsers()
+  $('#roster').html('')
+  for own id,name of users.list
+    $('#roster').append('<div><span class="label">' + name + '</span></div>')
 )

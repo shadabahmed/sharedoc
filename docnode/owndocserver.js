@@ -19,30 +19,39 @@ function handler (req, res) {
 var conferences = {};
 io.sockets.on('connection', function (socket) {
   socket.on('conf_join', function(data){
-    try{
+    //try{
         var confid = data.doc.id + ':' + data.confid;
         socket.confid = confid;
-        data.user.host = data.confid == data.user.id;
+
         socket.user = data.user;
+        socket.user.host = data.confid == data.user.id;
+
         if(socket.user.host){
-          if(!conferences[socket.confid])
+           if(!conferences[socket.confid])
               conferences[socket.confid] = {doc : data.doc, users : {list : {}, host: data.user.id, moderators : []}};
            conferences[socket.confid].users.moderators.push(data.user.id);
         }
+        else if(!conferences[socket.confid])
+            return;
+
+        if(conferences[socket.confid].users.list[data.user.id])
+            data.user.rejoined = true
         conferences[socket.confid].users.list[data.user.id] = data.user.name;
         socket.join(socket.confid);
 
         / * Confirm Joined */
-        socket.emit('conf_joined', conferences[socket.confid]);
+        socket.emit('conf_self_joined', conferences[socket.confid]);
         /* Broadcast to everyone joined */
-        socket.broadcast.to(socket.confid).emit('conf_new_user', {users : conferences[socket.confid].users, user : socket.user})
+        socket.broadcast.to(socket.confid).emit('conf_user_joined', {users : conferences[socket.confid].users, user : socket.user})
 
-    }
-    catch(err){console.log(err)}
+    //}
+    //catch(err){console.log(err)}
     /* Slide Change Callback */
-    socket.on('slidechange',function(data){
-      rooms[socket.roomid].document.currentslide = data.currentslide;
-      socket.broadcast.to(socket.roomid).emit('slidechanged', rooms[socket.roomid].document.currentslide);
+    socket.on('conf_doc_page_change',function(newPage){
+      if(socket.user.host){
+        conferences[socket.confid].doc.currentPage = newPage;
+        socket.broadcast.to(socket.confid).emit('conf_doc_page_changed', conferences[socket.confid].doc.currentPage);
+      }
     });
     
     /* Chat recieved callback */

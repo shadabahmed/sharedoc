@@ -3,6 +3,7 @@ Sharedoc::Application.routes.draw do
 
   root :to => 'documents#index'
   match 'share/:id' => 'documents#share', :as => 'share_document'
+  match 'view/:id/:conf_id' => 'documents#view', :as => 'view_document'
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

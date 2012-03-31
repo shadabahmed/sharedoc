@@ -1,3 +1,5 @@
+require 'digest/sha1'
+
 class DocumentsController < ApplicationController
   # GET /documents
   # GET /documents.json
@@ -41,10 +43,21 @@ class DocumentsController < ApplicationController
   
   def share
     @document = Document.find(params[:id])
-
+    @conference_id = @user_id = Digest::SHA1.hexdigest("%d_%d"%[Time.now.to_i, @document.id])
+    @host = true
     respond_to do |format|
         format.html
         format.js {render :layout => !request.xhr?}
+    end
+  end
+
+  def view
+    @document = Document.find(params[:id])
+    @conference_id = params[:conf_id]
+    @user_id = Digest::SHA1.hexdigest("%d_%d"%[Time.now.to_i, @document.id])
+    respond_to do |format|
+      format.html{render :action => 'share'}
+      format.js {render :layout => !request.xhr?}
     end
   end
   

@@ -18,16 +18,18 @@ class doc
 
     nextPageChange = ->
       doc.changePage(currentPage + 1)
+      conference.broadcast('conf_doc_page_change', currentPage)
 
     $(document).bind('doc_next_page', nextPageChange)
 
     prevPageChange = ->
       doc.changePage(currentPage - 1)
+      conference.broadcast('conf_doc_page_change', currentPage)
 
     $(document).bind('doc_prev_page', prevPageChange)
 
-    pageChange = (evt, pageData = {number : 1})->
-      doc.changePage(pageData.number)
+    pageChange = (evt, pageNumber)->
+      doc.changePage(pageNumber)
 
     $(document).bind('doc_page_change', pageChange)
 
@@ -43,36 +45,24 @@ class doc
 class roster
   users = undefined
   currentUser = undefined
-  addUser = (user)->
-    users.list[user.id] = user.name
-
-  removeUser = (user)->
-    delete users.list[user.id]
-    userIndex = users.moderators.indexOf(user.id)
-    delete users.moderators[userIndex]
-
-  newUser = (evt, usersData)->
-    users = usersData.users
-    if(usersData.user.id == currentUser.id)
-      $(document).trigger('roster_self_rejoined')
-    $(document).trigger('roster_new_user', usersData.user)
-
-  userDisconnected = (evt, usersData)->
-    users = usersData.users
-    $(document).trigger('roster_user_left', usersData.user)
 
   @init = (rosterUser)->
     currentUser = rosterUser
     users = {list: {}}
     users.list[currentUser.id] = currentUser.name
-    $(document).bind('transport_new_user', newUser)
-    $(document).bind('transport_user_left', userDisconnected)
-
-  @update = (confUsers)->
-    users = confUsers
+  @updateUsers = (usersList)->
+    users = usersList
   @getUsers = ->
     users
-  @newUserJoined = ->
+  @newUser = (usersData)->
+    users = usersData.users
+    if(usersData.user.id == currentUser.id)
+      $(document).trigger('roster_self_rejoined')
+    $(document).trigger('roster_user_joined', usersData.user)
+
+  @userLeft =  (usersData)->
+    users = usersData.users
+    $(document).trigger('roster_user_left', usersData.user)
 
   @getCurrentUser = ->
     {id: currentUser.id, name: users.list[currentUser.id]}
@@ -88,53 +78,41 @@ class transport
   socket = undefined
   options = undefined
 
-  connectionChanged = (status)->
-    $(document).trigger('transport_connection_changed', {status: status})
-
   @init = (transportOptions)->
     options = transportOptions
 
-  @connect = ->
+  @connect = (connectCallback)->
     socket = io.connect(options.host)
     socket.on('connect_failed', ->
-      connectionChanged('failed')
+      connectCallback('failed')
     )
     socket.on('error', ->
-      connectionChanged('error')
+      connectCallback('error')
     )
     socket.on('connect', ->
-      connectionChanged('connected')
+      connectCallback('connected')
     )
     socket.on('disconnect', ->
-      connectionChanged('disconnected')
+      connectCallback ('disconnected')
     )
 
   @join = (joinOptions)->
-    socket.on('conf_joined',  (data)->
-      $(document).trigger('transport_connection_changed', {status: 'joined', data: data})
-    )
-    socket.on('conf_new_user', (data)->
-      $(document).trigger('transport_new_user', data)
-    )
-    socket.on('conf_user_left', (data)->
-      $(document).trigger('transport_user_left', data)
-    )
     socket.emit('conf_join', joinOptions)
+  @broadcast = (name, data)->
+    socket.emit(name, data)
+  @subscribe = (name, callback)->
+    if name instanceof Object
+      for own event_name,callback of name
+        callback = name[event_name]
+        socket.on(event_name, callback)
+    else
+      socket.on(name, callback)
 
 
 class window.conference
   @doc = doc
   @roster = roster
   @chat = chat
-  transport = transport
-  $(document).bind('transport_connection_changed', (evt, transportData)->
-    if(transportData.status == 'connected')
-      doc = conference.doc.attrs()
-      transport.join({confid : conference.confid, doc: {id: doc.id, currentPage: doc.currentPage}, user: conference.roster.getCurrentUser()})
-    else if(transportData.status == 'joined')
-      conference.roster.update(transportData.data.users)
-      conference.doc.changePage(transportData.data.doc.currentPage)
-  )
 
   @init = (options)->
     @confid = options.confid
@@ -143,5 +121,30 @@ class window.conference
     @roster.init(options.user)
     @chat.init()
 
+  connectCallback = (status)->
+    if(status == 'connected')
+      # if connected then subscribe to events and join
+      transport.subscribe({
+        conf_self_joined: conference.joined
+        conf_user_joined: conference.roster.newUser,
+        conf_user_left: conference.roster.userLeft,
+        conf_doc_page_changed: conference.doc.changePage
+      })
+      doc = conference.doc.attrs()
+      conference.emit('conf_join', {confid : conference.confid, doc: {id: doc.id, currentPage: doc.currentPage},
+      user: conference.roster.getCurrentUser()})
+    $(document).trigger('transport_connection_changed', {status: status})
+
+  @joined = (joinData)->
+    conference.roster.updateUsers(joinData.users)
+    conference.doc.changePage(joinData.doc.currentPage)
+    $(document).trigger('transport_connection_changed', {status: 'joined'})
+    $(document).trigger('conf_self_joined')
+
+
   @join = ->
-    transport.connect()
+    transport.connect(connectCallback)
+
+  @broadcast = (name,data)->
+    transport.broadcast(name, data)
+  @emit = @broadcast

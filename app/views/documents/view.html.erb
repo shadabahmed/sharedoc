@@ -1,0 +1,27 @@
+<div class="alert alert-info" style="clear:both">
+  <strong>Viewing : </strong><%= @document.name %>
+  <div id="status_bar" style="float:right">Status :
+    <span class="label">Connecting...</span>
+  </div>
+</div>
+<div id="slides-container" style="text-align: center">
+  <div><h2>Slide <span id="slide-number">1</span> of <%=  @document.page_count %></h2></div>
+  <div id="slides"><img id="slides-image" style="width:800px;height:600px;border: solid black"/></div>
+</div>
+<%= javascript_include_tag 'documents' %>
+
+<%= javascript_tag do %>
+    $(function(){
+        var name = "";
+        while(!name)
+        name = prompt("Please enter your name","");
+        console.log(name);
+        conference.init({
+          confid: '<%= @conference_id %>',
+          doc: {id: '<%= @document.id %>',name: '<%= escape_javascript(@document.name) %>', pages: <%=raw @document.slides_urls.to_json %>},
+          transport: {host: 'http://<%= request.host %>:1337/'},
+          user: {name: name, id: '<%= request.session_options[:id] %>'}
+        });
+        conference.join();
+    });
+<% end %>
