@@ -23,7 +23,10 @@ end
 
 gem 'jquery-rails'
 gem "bootstrap-sass", "~> 2.0.1"
+gem 'simple_form'
+gem 'validates_email_format_of'
 gem 'devise'
+
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
 

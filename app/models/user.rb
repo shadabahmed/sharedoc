@@ -9,4 +9,6 @@ class User < ActiveRecord::Base
   # attr_accessible :title, :body
 
   validates :name, :presence => true
+  validates :email, :email_format => {:message => 'is not looking good'}
+
 end
