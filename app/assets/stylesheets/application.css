@@ -10,7 +10,7 @@
  *
  *= require bootstrap_helper
  *= require main
- *= require scaffolds
+ *= //require scaffolds
 */
 
 

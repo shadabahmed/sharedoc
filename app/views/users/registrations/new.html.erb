@@ -1,9 +1,12 @@
-<h2>Welcome to Docshare</h2>
+<% content_for(:box_title) { 'Welcome to Docshare' }%>
 <div class="alert alert-info">
   <strong>Sign up for your free account here.</strong>.
 </div>
 
 <%= simple_form_for resource, :as => resource_name, :url => registration_path(resource_name) do |f| %>
+    <%= resource_error_messages %>
+    <%= flash_messages %>
+
     <%= f.input :name %>
     <%= f.input :email %>
     <%= f.input :password %>

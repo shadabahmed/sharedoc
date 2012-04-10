@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html>
     <head>
-      <%= render 'shared/header' %>
+      <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"/>
       <title>Sharedoc</title>
       <%= stylesheet_link_tag    "application", :media => "all" %>
       <%= javascript_include_tag "application" %>
       <%= csrf_meta_tags %>
     </head>
     <body>
-        <%= content_for?(:content) ? yield(:content) : yield %>
+        <%= render 'shared/header', :links => @links %>
+        <div class="container">
+            <%= content_for?(:content) ? yield(:content) : yield %>
+            <%= render 'shared/footer' unless @no_footer %>
+        </div>
+
     </body>
 </html>

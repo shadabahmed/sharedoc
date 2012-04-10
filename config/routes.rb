@@ -1,11 +1,23 @@
 Sharedoc::Application.routes.draw do
 
   devise_for :users, :path => '', :path_names => { :sign_in =>'login', :sign_out =>'logout', :password =>'secret', :confirmation =>'confirmation',
-           :unlock => 'unblock', :registration => 'register',:sign_up => 'sign_up'}, :controllers => { :registrations => 'users/registrations' }
+           :unlock => 'unblock', :registration => 'register',:sign_up => 'sign_up'},
+           :controllers => { :registrations => 'users/registrations', :sessions => 'users/sessions',
+                             :confirmations => 'users/confirmations',:passwords => 'users/passwords' }
 
+
+  as :user do
+    get 'logout' => 'users/sessions#destroy', :as => :destroy_user_session
+    get 'signup' => 'users/registrations#new', :as => :new_user_registration
+  end
+
+
+  authenticated :user do
+    root :to => 'documents#index'
+  end
   resources :documents 
 
-  root:to =>'documents#index'
+  root:to =>'main#welcome'
 
   match 'share/:id' =>'documents#share',:as => 'share_document'
   match 'view/:id/:conf_id' =>'documents#view',:as => 'view_document'

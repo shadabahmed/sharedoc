@@ -1,18 +1,16 @@
-<h2>Sign in</h2>
+<% content_for(:box_title) { 'Login' }%>
 
-<%= form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f| %>
-
-  <div><%= f.label :email %><br />
-  <%= f.email_field :email %></div>
-
-  <div><%= f.label :password %><br />
-  <%= f.password_field :password %></div>
+<%= simple_form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f| %>
+    <%= flash_messages %>
+    <%= f.input :email %>
+    <%= f.input :password, :label => "Password #{ devise_mapping.recoverable? && controller_name != 'passwords' ?
+            link_to('(forgot password)', new_password_path(resource_name), :tabIndex => '-1') : '' }" %>
 
   <% if devise_mapping.rememberable? -%>
-    <div><%= f.check_box :remember_me %> <%= f.label :remember_me %></div>
+    <%= f.input :remember_me, :as => :boolean, :wrapper => :checkbox %>
   <% end -%>
 
-  <div><%= f.submit "Sign in" %></div>
+    <%= f.button :submit, 'Login' %>
 <% end %>
 
 <%= render "links" %>

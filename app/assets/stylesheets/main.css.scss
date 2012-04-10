@@ -27,3 +27,22 @@ div.disqus_comment_count{
   font-size: 10px;
   float: right;
 }
+
+$box_title_color: #FF8080;
+$box_grad_color: darken($box_title_color, 4%);
+
+.box-title {
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  background: #829AA8;
+  background: -moz-linear-gradient($box_title_color, $box_grad_color);
+  background: -webkit-linear-gradient($box_title_color, $box_grad_color);
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#829aa8',endColorstr='#405a6a')";
+  border: 1px solid $box_grad_color;
+  border-bottom-color: $box_title_color;
+  border-radius: 3px 3px 0 0;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.7);
+  margin: -20px -20px 10px -20px;
+  padding: 5px 20px;
+}
